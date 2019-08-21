@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps1">Map</string>
+<string name="title_search">Search</string>
+<string name="title_map">Map</string>
+<string name="title_profil">Profil</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+<string name="hello_blank_fragment">Hello blank fragment</string>
+<string name="app_label">app_label</string>
+<string name="search_hint">serch_hint</string>
+<string name="title_activity_main2">Main2Activity</string>
+<string name="action_settings">Settings</string>
+
+</resources>

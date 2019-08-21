@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/linear_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:padding="20dp"
+>
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" app:srcCompat="@mipmap/layers1"
+            android:id="@+id/imageView3" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintHorizontal_bias="0.491"
+            app:layout_constraintVertical_bias="0.079"/>
+    <TextView
+            android:id="@+id/text_view"
+            android:text="TextView"
+            android:layout_width="match_parent"
+            android:layout_height="81dp"/>
+    <Button
+            android:id="@+id/button_popup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close Me"
+    />
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/facebook" android:id="@+id/imageButton_facebook"
+                android:layout_weight="1" style="@style/Widget.AppCompat.ImageButton"
+                android:background="@drawable/roundedbutton" android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"/>
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/buy" android:id="@+id/imageButton4"
+                android:layout_weight="1"
+                android:background="@drawable/roundedbutton" android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"/>
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/call" android:id="@+id/imageButton_call"
+                android:layout_weight="1"
+                android:background="@drawable/roundedbutton" android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"/>
+        <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/map" android:id="@+id/imageButton_map"
+                android:layout_weight="1"
+                android:background="@drawable/roundedbutton" android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"/>
+    </LinearLayout>
+</LinearLayout>
