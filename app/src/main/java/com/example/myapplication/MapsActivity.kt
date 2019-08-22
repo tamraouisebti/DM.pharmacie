@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.Bundle
 import android.transition.Slide
 import android.transition.TransitionManager
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -22,6 +23,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.myapplication.ui.login.LoginActivity
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.location.places.ui.PlacePicker
@@ -53,10 +55,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
         val view = inflater.inflate(R.layout.another_view,null)
 
         // Initialize a new instance of popup window
+
+        var displayMetrics: DisplayMetrics  = DisplayMetrics()
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics)
+        var height : Int  = (0.55*displayMetrics.heightPixels).toInt()
+        var  width :Int = (0.75*displayMetrics.widthPixels).toInt()
+
         val popupWindow = PopupWindow(
             view, // Custom view to show in popup window
-            LinearLayout.LayoutParams.WRAP_CONTENT, // Width of popup window
-            LinearLayout.LayoutParams.WRAP_CONTENT // Window height
+            width, // Width of popup window
+            height
         )
 
         // Set an elevation for the popup window
@@ -81,7 +89,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
 
         // Get the widgets reference from custom view
         val tv = view.findViewById<TextView>(R.id.text_view)
-        val buttonPopup = view.findViewById<Button>(R.id.button_popup)
+        val buttonPopup = view.findViewById<ImageButton>(R.id.button_popup)
         val imagebutton_map = view.findViewById<ImageButton>(R.id.imageButton_map)
         val imagebutton_facebook = view.findViewById<ImageButton>(R.id.imageButton_facebook)
         val imagebutton_call = view.findViewById<ImageButton>(R.id.imageButton_call)
@@ -193,7 +201,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_profil -> {
-                viewflipper.displayedChild=2
+                var intent:Intent= Intent(this,LoginActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                applicationContext.startActivity(intent)
                 return@OnNavigationItemSelectedListener true
             }
         }
