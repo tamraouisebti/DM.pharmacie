@@ -1,11 +1,13 @@
 package com.example.myapplication
 
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.location.Address
 import android.location.Geocoder
@@ -13,6 +15,8 @@ import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.transition.Slide
 import android.transition.TransitionManager
 import android.util.DisplayMetrics
@@ -37,11 +41,137 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.android.synthetic.main.activity_maps1.*
+import kotlinx.android.synthetic.main.profil.*
+import kotlinx.android.synthetic.main.search.*
 import org.jetbrains.anko.makeCall
+import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 
-class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarkerClickListener {
+class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarkerClickListener
+    , AdapterView.OnItemClickListener{
+    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+
+        // Initialize a new layout inflater instance
+        var pharmacie_Location: Location= Location("pharmacie position")
+        pharmacie_Location.longitude=liste_pharmacie.get(position).position.longitude
+        pharmacie_Location.latitude=liste_pharmacie.get(position).position.latitude
+        val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
+        // Inflate a custom view using layout inflater
+        val view = inflater.inflate(R.layout.another_view,null)
+
+        // Initialize a new instance of popup window
+
+        var displayMetrics: DisplayMetrics  = DisplayMetrics()
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics)
+        var height : Int  = (0.55*displayMetrics.heightPixels).toInt()
+        var  width :Int = (0.75*displayMetrics.widthPixels).toInt()
+
+        val popupWindow = PopupWindow(
+            view, // Custom view to show in popup window
+            width, // Width of popup window
+            height
+        )
+
+        // Set an elevation for the popup window
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            popupWindow.elevation = 10.0F
+        }
+
+
+        // If API level 23 or higher then execute the code
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            // Create a new slide animation for popup window enter transition
+            val slideIn = Slide()
+            slideIn.slideEdge = Gravity.TOP
+            popupWindow.enterTransition = slideIn
+
+            // Slide animation for popup window exit transition
+            val slideOut = Slide()
+            slideOut.slideEdge = Gravity.RIGHT
+            popupWindow.exitTransition = slideOut
+
+        }
+
+        // Get the widgets reference from custom view
+        val tv = view.findViewById<TextView>(R.id.text_view)
+        val buttonPopup = view.findViewById<ImageButton>(R.id.button_popup)
+        val imagebutton_map = view.findViewById<ImageButton>(R.id.imageButton_map)
+        val imagebutton_facebook = view.findViewById<ImageButton>(R.id.imageButton_facebook)
+        val imagebutton_call = view.findViewById<ImageButton>(R.id.imageButton_call)
+        // Set click listener for popup window's text view
+        tv.setOnClickListener{
+            // Change the text color of popup window's text view
+            tv.setTextColor(Color.RED)
+        }
+
+        // Set a click listener for popup's button widget
+        buttonPopup.setOnClickListener{
+            // Dismiss the popup window
+
+            popupWindow.dismiss()
+
+        }
+
+        imagebutton_map.setOnClickListener {
+            var uri: String  ="http://maps.google.com/maps?&daddr="+pharmacie_Location.latitude.toString()+","+pharmacie_Location.longitude.toString()
+            var intent:Intent  = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            applicationContext.startActivity(intent)
+        }
+
+        imagebutton_facebook.setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("fb://page/678329039013848"))
+                startActivity(intent)
+            } catch (e: Exception) {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://www.facebook.com/678329039013848")))
+            }
+
+        }
+
+
+        imagebutton_call.setOnClickListener {
+            if (ActivityCompat.checkSelfPermission(this,
+                    android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                    arrayOf(android.Manifest.permission.CALL_PHONE), 4)}
+
+            makeCall("0672634290")
+
+        }
+
+        // Set a dismiss listener for popup window
+        popupWindow.setOnDismissListener {
+            Toast.makeText(applicationContext,"Popup closed",Toast.LENGTH_SHORT).show()
+        }
+
+        popupWindow.setFocusable(true)
+
+
+        // Finally, show the popup window on app
+        TransitionManager.beginDelayedTransition(container)
+        popupWindow.showAtLocation(
+            container, // Location to display popup window
+            Gravity.CENTER, // Exact position of layout to display popup
+            0, // X offset
+            0 // Y offset
+        )
+
+        var  destinationlocation:Location= Location("marker")
+        destinationlocation.latitude=pharmacie_Location.latitude
+        destinationlocation.longitude=pharmacie_Location.longitude
+
+        tv.text=liste_pharmacie.get(position).Address+"  distance " +lastLocation.distanceTo(destinationlocation)
+
+
+
+
+    }
+
     override fun onMarkerClick(marker: Marker): Boolean {
 
 
@@ -201,10 +331,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
                 return@OnNavigationItemSelectedListener true
             }
             R.id.navigation_profil -> {
-                var intent:Intent= Intent(this,LoginActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                applicationContext.startActivity(intent)
-                return@OnNavigationItemSelectedListener true
+
+                val pref = getSharedPreferences("connexion_info",Context.MODE_PRIVATE)
+                val con = pref.getBoolean("connected", false)
+                if(!con) {
+                    var intent: Intent = Intent(this, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    applicationContext.startActivity(intent)
+                }
+                else
+                {
+                    viewflipper.displayedChild=2
+                }
+                    return@OnNavigationItemSelectedListener true
             }
         }
         false
@@ -258,6 +397,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
         )
 
 
+        val adapter1 = SearchAdapter(applicationContext,liste_pharmacie)
+        listview.adapter = adapter1
+        listview.onItemClickListener=this
+
         // Set the AutoCompleteTextView adapter
         autoComplete.setAdapter(adapter)
 
@@ -292,10 +435,47 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
 
         ////////////////////////////////////////////////////////////////
 
-
-
-
-
+        //BUTTON CLICK
+        img_pick_btn.setOnClickListener {
+            //check runtime permission
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) ==
+                    PackageManager.PERMISSION_DENIED){
+                    //permission denied
+                    val permissions = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE);
+                    //show popup to request runtime permission
+                    requestPermissions(permissions, PERMISSION_CODE);
+                }
+                else{
+                    //permission already granted
+                    pickImageFromGallery();
+                }
+            }
+            else{
+                //system OS is < Marshmallow
+                pickImageFromGallery();
+            }
+        }
+        choose_from_camera.setOnClickListener {
+            //check runtime permission
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if (checkSelfPermission(Manifest.permission.CAMERA) ==
+                    PackageManager.PERMISSION_DENIED){
+                    //permission denied
+                    val permissions = arrayOf(Manifest.permission.CAMERA);
+                    //show popup to request runtime permission
+                    requestPermissions(permissions, PERMISSION_CODE_camera);
+                }
+                else{
+                    //permission already granted
+                    pickImageFromCamera();
+                }
+            }
+            else{
+                //system OS is < Marshmallow
+                pickImageFromCamera();
+            }
+        }
 
        /* ////////////////////////////////////////////////
 
@@ -443,6 +623,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
          const val REQUEST_CHECK_SETTINGS = 2
          const val PLACE_PICKER_REQUEST = 3
         const val CALL_PHONE_PERMISSION_REQUEST_CODE = 1
+        //image pick code
+        private val IMAGE_PICK_CODE = 1000;
+        //Permission code
+        private val PERMISSION_CODE = 1001;
+
+        private val IMAGE_PICK_CODE_Camera = 1002;
+        private val PERMISSION_CODE_camera = 1004;
 
     }
 
@@ -547,6 +734,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
                 placeMarkerOnMap(place.latLng)
             }
         }
+        if (resultCode == Activity.RESULT_OK && requestCode == IMAGE_PICK_CODE){
+            image_view.setImageURI(data?.data)
+        }
+        if (resultCode == Activity.RESULT_OK && requestCode == IMAGE_PICK_CODE_Camera){
+            if (data != null && data.getExtras() != null) {
+
+                var imageBitmap : Bitmap  =  data.extras.get("data") as Bitmap
+                image_view.setImageBitmap(imageBitmap);
+            }
+            image_view.setImageURI(data?.data)
+        }
 
     }
 
@@ -586,6 +784,87 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
     }
 
 
+
+
+    private fun pickImageFromGallery() {
+        //Intent to pick image
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, IMAGE_PICK_CODE)
+    }
+    private fun pickImageFromCamera() {
+        //Intent to pick image
+
+
+
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+       // intent.type = "image/*"
+        startActivityForResult(intent, IMAGE_PICK_CODE_Camera)
+    }
+
+
+
+    //handle requested permission result
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        when(requestCode){
+            PERMISSION_CODE -> {
+                if (grantResults.size >0 && grantResults[0] ==
+                    PackageManager.PERMISSION_GRANTED){
+                    //permission from popup granted
+                    pickImageFromGallery()
+                }
+                else{
+                    //permission from popup denied
+                    Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    //handle result of picked image
+
+    val MEDIA_TYPE_IMAGE = 1
+    val MEDIA_TYPE_VIDEO = 2
+
+    /** Create a file Uri for saving an image or video */
+    private fun getOutputMediaFileUri(type: Int): Uri {
+        return Uri.fromFile(getOutputMediaFile(type))
+    }
+
+    /** Create a File for saving an image or video */
+    private fun getOutputMediaFile(type: Int): File? {
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+        val mediaStorageDir = File(
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            "MyCameraApp"
+        )
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        mediaStorageDir.apply {
+            if (!exists()) {
+                if (!mkdirs()) {
+                    Log.d("MyCameraApp", "failed to create directory")
+                    return null
+                }
+            }
+        }
+
+        // Create a media file name
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        return when (type) {
+            MEDIA_TYPE_IMAGE -> {
+                File("${mediaStorageDir.path}${File.separator}IMG_$timeStamp.jpg")
+            }
+            MEDIA_TYPE_VIDEO -> {
+                File("${mediaStorageDir.path}${File.separator}VID_$timeStamp.mp4")
+            }
+            else -> null
+        }
+    }
 
 }
 
