@@ -1,19 +1,24 @@
 package com.example.myapplication
 
-import com.google.android.gms.maps.model.LatLng
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-class pharmacie {
-     lateinit var Address : String
-     var horaire_overture : Int = 0
-     var horaire_fermeture : Int =0
-     lateinit var phone_number : String
-     var cnas :Boolean=false
-     var casnos :Boolean=false
-     lateinit var lien_facebook : String
-     lateinit var position : LatLng
-
-    constructor(Address : String,horaire_overture : Int, horaire_fermeture : Int, phone_number : String, cnas :Boolean=false, casnos :Boolean=false
-                        , lien_facebook : String, position : LatLng
+@Entity(tableName = "pharmacies")
+data class pharmacie
+    (
+    @PrimaryKey
+    var id_pharmacie: Int,
+    var Address : String,
+    var horaire_overture : Int,
+    var horaire_fermeture : Int,
+    var phone_number : String,
+    var cnas :Boolean,
+    var casnos :Boolean,
+    var lien_facebook : String,
+    var position_longitude : Float,
+    var position_latitude:Float)
+  /*  constructor(Address : String,horaire_overture : Int, horaire_fermeture : Int, phone_number : String, cnas :Boolean=false, casnos :Boolean=false
+                        , lien_facebook : String, position_longitude : Float,position_latitude:Float
     )
     {
         this.Address=Address
@@ -23,9 +28,8 @@ class pharmacie {
         this.cnas=cnas
         this.casnos=casnos
         this.lien_facebook=lien_facebook
-        this.position=position
+        this.position_longitude=position_longitude
     }
 
+*/
 
-
-}
