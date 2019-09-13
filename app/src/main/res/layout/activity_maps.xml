@@ -30,6 +30,7 @@
         <include layout="@layout/search"/>
         <include layout="@layout/activity_maps1"/>
         <include layout="@layout/profil"/>
+        <include layout="@layout/commande"/>
     </ViewFlipper>
 
 

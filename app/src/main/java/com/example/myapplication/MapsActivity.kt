@@ -27,7 +27,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.example.myapplication.ui.login.LoginActivity
+import androidx.core.content.edit
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.location.places.ui.PlacePicker
@@ -41,9 +41,12 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.android.synthetic.main.activity_maps1.*
+import kotlinx.android.synthetic.main.commande.*
 import kotlinx.android.synthetic.main.profil.*
 import kotlinx.android.synthetic.main.search.*
 import org.jetbrains.anko.makeCall
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -56,8 +59,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
 
         // Initialize a new layout inflater instance
         var pharmacie_Location: Location= Location("pharmacie position")
-        pharmacie_Location.longitude=liste_pharmacie.get(position).position.longitude
-        pharmacie_Location.latitude=liste_pharmacie.get(position).position.latitude
+        pharmacie_Location.longitude=liste_pharmacie.get(position).position_longitude
+        pharmacie_Location.latitude=liste_pharmacie.get(position).position_latitude
         val inflater: LayoutInflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         // Inflate a custom view using layout inflater
@@ -335,7 +338,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
                 val pref = getSharedPreferences("connexion_info",Context.MODE_PRIVATE)
                 val con = pref.getBoolean("connected", false)
                 if(!con) {
-                    var intent: Intent = Intent(this, LoginActivity::class.java)
+                    var intent: Intent = Intent(this, MainActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     applicationContext.startActivity(intent)
                 }
@@ -434,6 +437,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
 
 
         ////////////////////////////////////////////////////////////////
+
+        button_deconnexion.setOnClickListener {
+            val pref = getSharedPreferences("connexion_info", Context.MODE_PRIVATE)
+            pref.edit { putBoolean("connected",false)
+                finish()
+                startActivity(intent)}
+        }
+
 
         //BUTTON CLICK
         img_pick_btn.setOnClickListener {
@@ -606,8 +617,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
 
     private fun placeMarkerOnMap(location: LatLng) {
 
+        var pos : LatLng
         for (i in liste_pharmacie)
-        {mMap.addMarker(MarkerOptions().position(i.position).title(i.Address)) }
+        {
+            pos=LatLng(i.position_longitude,i.position_latitude)
+            mMap.addMarker(MarkerOptions().position(pos).title(i.Address)) }
 
 
     }
@@ -775,13 +789,55 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,  GoogleMap.OnMarke
     }
     public fun add_pharmacie()
     {
-        liste_pharmacie.add(pharmacie("RUE 11 Novembre",9,23,"0672634290",
-            true,false,"426253597411506",LatLng(36.784393, 8.381000)))
-        liste_pharmacie.add(pharmacie("RUE Abbatoire",9,23,"0672634290",
-            true,false,"426253597411506",LatLng(36.780657, 8.379028)))
-        liste_pharmacie.add(pharmacie("RUE Batiment",9,23,"0672634290",
-            true,false,"426253597411506",LatLng(36.787454, 8.382703)))
+     //   liste_pharmacie.add(pharmacie(1,"RUE 11 Novembre",9,23,"0672634290",
+     //       true,false,"426253597411506",36.784393, 8.381000))
+
+
+
+        val call = RetrofitService.endpoint.getpharmacie()
+
+
+        call.enqueue(object: Callback<List<pharmacie>> {
+            override fun onFailure(call: retrofit2.Call<List<pharmacie>>, t: Throwable) {
+
+
+                Toast.makeText(applicationContext,"fail", Toast.LENGTH_LONG).show()
+            }
+
+            override fun onResponse(call: retrofit2.Call<List<pharmacie>>?, response:
+            Response<List<pharmacie>>?) {
+
+                if(response?.isSuccessful!!) {
+                    liste_pharmacie= response.body() as ArrayList<pharmacie>
+                 }
+            }
+
+        })
+
+
+
+       /*     call.enqueue(object :Callback<String>{
+                override fun onResponse(call: Call<String>?, response: Response<String>?) {
+                    if(response?.isSuccessful!!){
+                        val rep :String =response.body()!!
+                        Toast.makeText(applicationContext,"Success",Toast.LENGTH_LONG).show()
+                    }
+
+                }
+
+                override fun onFailure(call: Call<String>, t: Throwable) {
+                    Log.e("erreur",t.toString())
+                    Toast.makeText(applicationContext,"Fail",Toast.LENGTH_LONG).show()
+
+                }
+
+            })*/
+
+
+
+
     }
+
 
 
 

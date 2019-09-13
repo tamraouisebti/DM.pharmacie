@@ -39,7 +39,7 @@ class SearchAdapter (val ctx: Context, val data:List<pharmacie>) : BaseAdapter()
 
 
         }
-        holder.imageView1.setImageResource(R.drawable.mapadresse)
+        holder.imageView1.setImageResource(R.drawable.map)
         holder.imageView2.setImageResource(R.drawable.map)
         holder.imageView3.setImageResource(R.drawable.call)
         return view

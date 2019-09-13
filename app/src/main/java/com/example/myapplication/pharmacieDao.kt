@@ -7,5 +7,5 @@ import androidx.room.Query
 @Dao
 interface pharmacieDao {
     @Query("Select * From pharmacies")
-    fun getPlayer():List<pharmacie>
+    fun getpharmacie():List<pharmacie>
 }
